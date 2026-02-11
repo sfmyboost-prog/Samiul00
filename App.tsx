@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
@@ -35,11 +34,9 @@ const AdminRouteGuard: React.FC<{ children: React.ReactElement }> = ({ children 
 };
 
 const UserRouteGuard: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isLoggedIn, setLoginModalOpen } = useStore();
+  const { isLoggedIn } = useStore();
   
   if (!isLoggedIn) {
-    // If not logged in, we let the individual components handle the redirect or modal
-    // For specific pages like checkout, we redirect to login page
     return <Navigate to="/login" />;
   }
   
@@ -67,6 +64,7 @@ const AppContent: React.FC = () => {
       <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
 
       {/* Admin Routes */}
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminRouteGuard><AdminLayout><Dashboard /></AdminLayout></AdminRouteGuard>} />
       <Route path="/admin/products" element={<AdminRouteGuard><AdminLayout><ProductsManagement /></AdminLayout></AdminRouteGuard>} />
