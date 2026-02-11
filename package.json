@@ -10,17 +10,21 @@
     "nmp": "npm"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
+    "lucide-react": "^0.475.0",
+    "otpauth": "^9.5.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.5",
-    "lucide-react": "^0.475.0",
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@types/qrcode.react": "^1.0.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vite": "^6.0.0"
   }
 }
