@@ -1,0 +1,9 @@
+{
+  "id": "superstore-v1-production",
+  "name": "SuperStore E-commerce",
+  "description": "Professional single-vendor e-commerce platform with coin collection rewards and dynamic price deductions.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
