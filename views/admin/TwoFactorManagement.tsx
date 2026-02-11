@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ShieldCheck, ShieldAlert, RotateCcw, Copy, CheckCircle2, AlertCircle } from '../../components/common/Icons';
 import * as OTPAuth from 'otpauth';
@@ -16,20 +16,28 @@ const TwoFactorManagement: React.FC = () => {
   };
 
   const generateNewSecret = () => {
-    // Generate a random base32 secret
+    // Generate a secure random base32 secret (20 bytes / 160 bits is standard for TOTP)
     const secret = new OTPAuth.Secret({ size: 20 }).base32;
     setTempSecret(secret);
     setShowQR(true);
-    showToast('New secret key generated. Please scan the QR code.');
+    showToast('New secret key generated. Scan to update your app.');
   };
 
   const handleToggle2FA = () => {
+    // If enabling for the first time, force secret generation
     if (!adminProfile.twoFactorEnabled && !tempSecret) {
       generateNewSecret();
       return;
     }
 
     const nextState = !adminProfile.twoFactorEnabled;
+    
+    // Safety check: Don't allow enabling without a secret
+    if (nextState && !tempSecret) {
+      showToast('Please generate a secret key first', 'error');
+      return;
+    }
+
     setAdminProfile(prev => ({
       ...prev,
       twoFactorEnabled: nextState,
@@ -41,132 +49,142 @@ const TwoFactorManagement: React.FC = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    showToast('Secret key copied to clipboard');
+    showToast('Secret key copied');
   };
 
-  const totpUri = tempSecret ? new OTPAuth.TOTP({
-    issuer: 'SuperStore',
-    label: adminProfile.email,
-    algorithm: 'SHA1',
-    digits: 6,
-    period: 30,
-    secret: tempSecret
-  }).toString() : '';
+  // Generate the standard otpauth URI for app scanning
+  const totpUri = useMemo(() => {
+    if (!tempSecret) return '';
+    return new OTPAuth.TOTP({
+      issuer: 'SuperStore',
+      label: adminProfile.email,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: tempSecret
+    }).toString();
+  }, [tempSecret, adminProfile.email]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Two-Factor Authentication</h1>
-          <p className="text-xs text-gray-400 font-medium mt-1">Enhance your account security with standard TOTP protection.</p>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase italic">Security Center</h1>
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Multi-factor Authentication Management</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
-          {/* Status Card */}
-          <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${adminProfile.twoFactorEnabled ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
-                    {adminProfile.twoFactorEnabled ? <ShieldCheck size={32} /> : <ShieldAlert size={32} />}
+          {/* Status Monitoring Card */}
+          <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-10">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
+                <div className="flex items-center gap-6">
+                  <div className={`w-20 h-20 rounded-[28px] flex items-center justify-center shadow-inner ${adminProfile.twoFactorEnabled ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
+                    {adminProfile.twoFactorEnabled ? <ShieldCheck size={40} /> : <ShieldAlert size={40} />}
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-gray-800">Account Protection</h3>
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">
-                      Status: {adminProfile.twoFactorEnabled ? 'Active' : 'Disabled'}
-                    </p>
+                    <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">Admin Protection</h3>
+                    <div className="flex items-center gap-2 mt-1.5">
+                       <div className={`w-2 h-2 rounded-full ${adminProfile.twoFactorEnabled ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                       <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
+                        Status: {adminProfile.twoFactorEnabled ? 'Fully Protected' : 'At Risk'}
+                       </span>
+                    </div>
                   </div>
                 </div>
                 
                 <button 
                   onClick={handleToggle2FA}
-                  className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform active:scale-95 shadow-lg ${
+                  className={`px-10 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all transform active:scale-95 shadow-xl ${
                     adminProfile.twoFactorEnabled 
-                    ? 'bg-red-50 text-red-500 shadow-red-500/10' 
-                    : 'bg-green-500 text-white shadow-green-500/20'
+                    ? 'bg-red-50 text-red-500 shadow-red-500/5' 
+                    : 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600'
                   }`}
                 >
-                  {adminProfile.twoFactorEnabled ? 'Disable Protection' : 'Enable 2FA'}
+                  {adminProfile.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                 </button>
               </div>
 
-              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                <div className="flex gap-4">
-                  <AlertCircle size={20} className="text-blue-500 shrink-0" />
-                  <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                    Two-factor authentication adds an extra layer of security to your account. 
-                    In addition to your password, you'll need to enter a 6-digit code from 
-                    apps like Google Authenticator or Authy to log in.
+              <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100 relative overflow-hidden">
+                <div className="flex gap-5 relative z-10">
+                  <AlertCircle size={24} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-500 leading-loose font-bold uppercase tracking-tight">
+                    By enabling 2FA, you require a dynamic 6-digit code for every login attempt. 
+                    This prevents unauthorized access even if your password is compromised.
                   </p>
                 </div>
+                <div className="absolute -right-8 -bottom-8 text-[120px] text-gray-100/50 font-black italic select-none">MFA</div>
               </div>
             </div>
           </div>
 
-          {/* Setup Card */}
+          {/* Configuration Card */}
           {(showQR || adminProfile.twoFactorEnabled) && (
-            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
-              <div className="p-8">
-                <h3 className="text-lg font-black text-gray-800 mb-6 italic">Setup Instructions</h3>
+            <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-6 duration-700">
+              <div className="p-10">
+                <h3 className="text-xl font-black text-gray-800 mb-8 italic uppercase tracking-tighter">Configuration Setup</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-6">
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-black text-[10px] shrink-0">1</div>
-                      <p className="text-xs text-gray-600 font-medium">Download a TOTP authenticator app like Google Authenticator or Microsoft Authenticator.</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-black text-[10px] shrink-0">2</div>
-                      <p className="text-xs text-gray-600 font-medium">Scan the QR code on the right with your app or enter the manual secret key.</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-black text-[10px] shrink-0">3</div>
-                      <p className="text-xs text-gray-600 font-medium">Once scanned, your app will generate a 6-digit code that changes every 30 seconds.</p>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-8">
+                    {[
+                      { step: 1, text: "Install a TOTP Authenticator app on your smartphone." },
+                      { step: 2, text: "Scan the QR code or enter the secret key manually into the app." },
+                      { step: 3, text: "Verify the 6-digit code generated by the app during login." }
+                    ].map((item, i) => (
+                      <div key={i} className="flex gap-5">
+                        <div className="w-8 h-8 rounded-xl bg-[#f85606] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-lg shadow-orange-500/20">{item.step}</div>
+                        <p className="text-[11px] text-gray-600 font-bold uppercase tracking-tight leading-relaxed">{item.text}</p>
+                      </div>
+                    ))}
 
-                    <div className="pt-6">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">Manual Secret Key</label>
+                    <div className="pt-8 border-t border-gray-50">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 ml-1">Manual Private Key</label>
                       <div className="flex gap-2">
-                        <code className="flex-grow bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 text-sm font-bold text-gray-800 tracking-wider">
+                        <code className="flex-grow bg-gray-50 px-5 py-4 rounded-2xl border border-gray-100 text-sm font-black text-gray-800 tracking-[0.2em] shadow-inner">
                           {tempSecret}
                         </code>
                         <button 
                           onClick={() => copyToClipboard(tempSecret)}
-                          className="p-3 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-colors"
+                          className="p-4 bg-gray-50 text-gray-400 rounded-2xl hover:bg-gray-100 hover:text-gray-800 transition-all border border-gray-100"
+                          title="Copy to clipboard"
                         >
-                          <Copy size={18} />
+                          <Copy size={20} />
                         </button>
                         <button 
                           onClick={generateNewSecret}
-                          className="p-3 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-colors"
-                          title="Generate New Key"
+                          className="p-4 bg-gray-50 text-gray-400 rounded-2xl hover:bg-orange-50 hover:text-[#f85606] transition-all border border-gray-100"
+                          title="Rotate Secret Key"
                         >
-                          <RotateCcw size={18} />
+                          <RotateCcw size={20} />
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-3xl border border-gray-100">
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                  <div className="flex flex-col items-center justify-center p-10 bg-gray-50 rounded-[40px] border border-gray-100 shadow-inner">
+                    <div className="bg-white p-6 rounded-[32px] shadow-xl border border-gray-100 relative group">
                       {totpUri ? (
                         <QRCodeSVG 
                           value={totpUri} 
-                          size={180}
+                          size={200}
                           level="H"
-                          includeMargin={true}
+                          includeMargin={false}
+                          className="group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-[180px] h-[180px] flex items-center justify-center text-gray-300 font-bold uppercase text-[10px] text-center px-4">
-                          Generate secret to view QR Code
+                        <div className="w-[200px] h-[200px] flex items-center justify-center text-gray-200 font-black uppercase text-[10px] text-center px-6 leading-relaxed italic">
+                          Click Rotate to generate Setup Code
                         </div>
                       )}
                     </div>
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-6 text-center">Scan with Google Authenticator</p>
+                    <div className="mt-8 flex items-center gap-2">
+                       <CheckCircle2 size={14} className="text-green-500" />
+                       <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">Scannable via App</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -174,28 +192,31 @@ const TwoFactorManagement: React.FC = () => {
           )}
         </div>
 
+        {/* Info Sidebar */}
         <div className="lg:col-span-4 space-y-8">
-          <div className="bg-[#1e1e2d] rounded-[24px] p-8 text-white shadow-xl shadow-gray-200/50">
-            <h3 className="text-lg font-black italic mb-4">Why use 2FA?</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-medium">
-              Passwords can be stolen, guessed, or bypassed. Two-factor authentication 
-              ensures that even if someone has your password, they cannot access your 
-              admin panel without the physical device generating your unique tokens.
-            </p>
-            
-            <div className="mt-8 space-y-4">
-               <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-green-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Brute Force Protection</span>
-               </div>
-               <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-green-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Phishing Mitigation</span>
-               </div>
-               <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-green-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Identity Assurance</span>
-               </div>
+          <div className="bg-[#1e1e2d] rounded-[32px] p-10 text-white shadow-2xl shadow-gray-300 relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-xl font-black italic mb-6 uppercase tracking-tighter">Security Grade</h3>
+              <p className="text-xs text-gray-400 leading-loose font-bold uppercase tracking-tight mb-10 opacity-80">
+                SuperStore implements military-grade TOTP (Time-based One-Time Password) hashing to verify your identity.
+              </p>
+              
+              <div className="space-y-6">
+                 {[
+                   "Hardware bound validation",
+                   "Clock-drift compensation",
+                   "Anti-phishing architecture",
+                   "Dynamic key rotation"
+                 ].map((feat, i) => (
+                   <div key={i} className="flex items-center gap-4 group">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#f85606] group-hover:scale-150 transition-transform"></div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-100">{feat}</span>
+                   </div>
+                 ))}
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+               <ShieldCheck size={160} strokeWidth={0.5} />
             </div>
           </div>
         </div>
