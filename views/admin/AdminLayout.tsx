@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -15,7 +14,8 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
+  ShieldCheck
 } from '../../components/common/Icons';
 import { useStore } from '../../context/StoreContext';
 
@@ -145,6 +145,19 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <TrendingUp size={20} className={pathname === '/admin/report' ? 'text-white' : 'group-hover:text-white'} />
             <span className={`font-medium whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               Reports
+            </span>
+          </Link>
+
+          {/* New Authentication Menu Item */}
+          <Link 
+            to="/admin/auth"
+            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all group ${
+              pathname === '/admin/auth' ? 'bg-[#f85606] text-white' : 'hover:bg-gray-800'
+            }`}
+          >
+            <ShieldCheck size={20} className={pathname === '/admin/auth' ? 'text-white' : 'group-hover:text-white'} />
+            <span className={`font-medium whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              Authentication
             </span>
           </Link>
 

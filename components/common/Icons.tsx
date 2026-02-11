@@ -1,5 +1,5 @@
 
-/* Fix: Added missing Clock icon export from lucide-react */
+/* Fix: Added missing Clock and Copy icon export from lucide-react */
 import { 
   Search, 
   ShoppingCart, 
@@ -68,7 +68,8 @@ import {
   Phone,
   Calendar,
   Link,
-  Clock
+  Clock,
+  Copy
 } from 'lucide-react';
 
 export {
@@ -139,5 +140,6 @@ export {
   Phone,
   Calendar,
   Link,
-  Clock
+  Clock,
+  Copy
 };

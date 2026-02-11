@@ -1,4 +1,3 @@
-
 export type Currency = 'BDT' | 'USD';
 
 export interface Product {
@@ -103,6 +102,8 @@ export interface AdminProfile {
   contact: string;
   email: string;
   role: string;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string;
 }
 
 export interface LoginSettings {

@@ -27,6 +27,7 @@ import OrdersManagement from './views/admin/OrdersManagement';
 import CustomersManagement from './views/admin/CustomersManagement';
 import MediaManagement from './views/admin/MediaManagement';
 import StoreSettings from './views/admin/StoreSettings';
+import TwoFactorManagement from './views/admin/TwoFactorManagement';
 
 const AdminRouteGuard: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAdmin } = useStore();
@@ -72,7 +73,8 @@ const AppContent: React.FC = () => {
       <Route path="/admin/media" element={<AdminRouteGuard><AdminLayout><MediaManagement /></AdminLayout></AdminRouteGuard>} />
       <Route path="/admin/orders" element={<AdminRouteGuard><AdminLayout><OrdersManagement /></AdminLayout></AdminRouteGuard>} />
       <Route path="/admin/customers" element={<AdminRouteGuard><AdminLayout><CustomersManagement /></AdminLayout></AdminRouteGuard>} />
-      <Route path="/admin/report" element={<AdminRouteGuard><AdminLayout><div className="text-2xl font-bold">Analytics Reports</div></AdminLayout></AdminRouteGuard>} />
+      <Route path="/admin/report" element={<AdminRouteGuard><AdminLayout><div className="text-2xl font-bold p-8">Analytics Reports</div></AdminLayout></AdminRouteGuard>} />
+      <Route path="/admin/auth" element={<AdminRouteGuard><AdminLayout><TwoFactorManagement /></AdminLayout></AdminRouteGuard>} />
       <Route path="/admin/settings" element={<AdminRouteGuard><AdminLayout><StoreSettings /></AdminLayout></AdminRouteGuard>} />
       
       {/* Fallback */}

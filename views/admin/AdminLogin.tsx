@@ -1,16 +1,17 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { AlertCircle } from '../../components/common/Icons';
+import * as OTPAuth from 'otpauth';
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [authCode, setAuthCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { setAdmin } = useStore();
+  const { setAdmin, adminProfile } = useStore();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,29 @@ const AdminLogin: React.FC = () => {
 
     // Simulate API call
     setTimeout(() => {
-      if (email === 'admin@superstore.com' && password === 'admin123') {
+      if (email === adminProfile.email && password === 'admin123') {
+        // If 2FA is enabled, verify the code
+        if (adminProfile.twoFactorEnabled && adminProfile.twoFactorSecret) {
+          try {
+            const totp = new OTPAuth.TOTP({
+              secret: adminProfile.twoFactorSecret,
+              digits: 6,
+              period: 30
+            });
+            const delta = totp.validate({ token: authCode, window: 1 });
+            
+            if (delta === null) {
+              setError('Invalid authentication code. Please check your authenticator app.');
+              setIsLoading(false);
+              return;
+            }
+          } catch (err) {
+            setError('Error validating code.');
+            setIsLoading(false);
+            return;
+          }
+        }
+
         localStorage.setItem('admin_session', 'active');
         setAdmin(true);
         navigate('/admin/dashboard');
@@ -70,6 +93,24 @@ const AdminLogin: React.FC = () => {
                 required
               />
             </div>
+            
+            {/* New TOTP Field */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Authentication Code</label>
+              <input
+                type="text"
+                maxLength={6}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="w-full px-4 py-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-[#f85606] focus:border-transparent transition-all tracking-[0.5em] text-center font-bold"
+                placeholder="000000"
+                value={authCode}
+                onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, ''))}
+                required={adminProfile.twoFactorEnabled}
+              />
+              <p className="text-[10px] text-gray-400 mt-2 font-medium">Enter the 6-digit code from your authenticator app if 2FA is enabled.</p>
+            </div>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input type="checkbox" className="w-4 h-4 rounded text-[#f85606] focus:ring-[#f85606]" />
