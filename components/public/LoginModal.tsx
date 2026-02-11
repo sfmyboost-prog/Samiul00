@@ -140,7 +140,7 @@ const LoginModal: React.FC = () => {
 
         {/* Header Tab */}
         <div className="flex border-b">
-          <div className="flex-1 py-5 text-sm font-bold text-gray-800 relative text-center uppercase tracking-wider">
+          <div className="flex-1 py-5 text-sm font-bold text-gray-800 relative text-center uppercase tracking-widest italic">
             {mode === 'login' ? 'PASSWORD' : 'CREATE ACCOUNT'}
             <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f85606] mx-auto w-1/4" />
           </div>
@@ -185,7 +185,7 @@ const LoginModal: React.FC = () => {
               </div>
 
               <div className="text-right">
-                <button type="button" className="text-xs text-gray-400 hover:text-[#f85606] transition-colors font-medium">
+                <button type="button" className="text-xs text-gray-400 hover:text-[#f85606] transition-colors font-medium italic">
                   Forgot password?
                 </button>
               </div>
@@ -193,15 +193,15 @@ const LoginModal: React.FC = () => {
               <button 
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-4 bg-[#f85606] text-white font-bold rounded shadow-lg shadow-orange-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 uppercase tracking-widest ${
+                className={`w-full py-4 bg-[#f85606] text-white font-black rounded shadow-lg shadow-orange-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[11px] ${
                   isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#d04a05]'
                 }`}
               >
                 {isLoading ? 'PLEASE WAIT...' : 'LOGIN'}
               </button>
 
-              <p className="text-center text-xs text-gray-500">
-                Don't have an account? <button type="button" onClick={() => { setMode('signup'); setError(''); }} className="text-blue-500 font-bold hover:underline">Sign up</button>
+              <p className="text-center text-xs text-gray-500 font-medium">
+                Don't have an account? <button type="button" onClick={() => { setMode('signup'); setError(''); }} className="text-blue-500 font-black hover:underline ml-1">Sign up</button>
               </p>
             </form>
           ) : (
@@ -264,15 +264,15 @@ const LoginModal: React.FC = () => {
               <button 
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-4 bg-[#2563eb] text-white font-bold rounded shadow-lg shadow-blue-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 uppercase tracking-widest ${
+                className={`w-full py-4 bg-[#2563eb] text-white font-black rounded shadow-lg shadow-blue-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[11px] ${
                   isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
                 }`}
               >
                 {isLoading ? 'CREATING...' : 'SIGN UP'}
               </button>
 
-              <p className="text-center text-xs text-gray-500">
-                Already have an account? <button type="button" onClick={() => { setMode('login'); setError(''); }} className="text-[#f85606] font-bold hover:underline">Login Now</button>
+              <p className="text-center text-xs text-gray-500 font-medium">
+                Already have an account? <button type="button" onClick={() => { setMode('login'); setError(''); }} className="text-[#f85606] font-black hover:underline ml-1">Login Now</button>
               </p>
             </form>
           )}
@@ -281,9 +281,9 @@ const LoginModal: React.FC = () => {
           {showSocialArea && (
             <>
               {/* Social Divider */}
-              <div className="relative flex justify-center py-6">
+              <div className="relative flex justify-center py-8">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                <span className="relative bg-white px-4 text-[10px] text-gray-400 uppercase font-medium">Or, login with</span>
+                <span className="relative bg-white px-4 text-[9px] text-gray-300 uppercase font-black tracking-[0.3em]">OR, LOGIN WITH</span>
               </div>
 
               {/* Social Buttons */}
@@ -292,15 +292,12 @@ const LoginModal: React.FC = () => {
                   <button 
                     onClick={() => setSocialModal({ isOpen: true, platform: 'Google' })}
                     type="button" 
-                    className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors group"
+                    className="flex items-center gap-2 text-gray-400 hover:text-gray-800 transition-all group"
                   >
-                    <svg className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" viewBox="0 0 48 48">
+                    <svg className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all opacity-70 group-hover:opacity-100" viewBox="0 0 48 48">
                       <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-                      <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-                      <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-                      <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
                     </svg>
-                    <span className="text-xs font-medium uppercase tracking-widest">Google</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">GOOGLE</span>
                   </button>
                 )}
                 
@@ -308,12 +305,12 @@ const LoginModal: React.FC = () => {
                   <button 
                     onClick={() => setSocialModal({ isOpen: true, platform: 'Facebook' })}
                     type="button" 
-                    className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors group"
+                    className="flex items-center gap-2 text-gray-400 hover:text-gray-800 transition-all group"
                   >
-                    <svg className="w-5 h-5 fill-gray-400 group-hover:fill-[#1877f2] transition-all" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 fill-current opacity-70 group-hover:opacity-100" viewBox="0 0 24 24">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                    <span className="text-xs font-medium uppercase tracking-widest">Facebook</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">FACEBOOK</span>
                   </button>
                 )}
               </div>

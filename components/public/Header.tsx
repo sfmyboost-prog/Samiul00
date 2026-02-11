@@ -1,12 +1,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Trash2, List, ChevronRight, LogOut, ChevronDown } from '../common/Icons';
+import { Search, ShoppingCart, Heart, User, Trash2, List, ChevronRight, LogOut, ChevronDown, Plus } from '../common/Icons';
 import { useStore } from '../../context/StoreContext';
 import { Product } from '../../types';
 
 const Header: React.FC = () => {
-  const { cart, wishlist, removeFromCart, isLoggedIn, setIsLoggedIn, currency, setCurrency, formatPrice, products, setLoginModalOpen } = useStore();
+  const { cart, wishlist, removeFromCart, toggleWishlist, isLoggedIn, setIsLoggedIn, currency, setCurrency, formatPrice, products, setLoginModalOpen, addToCart } = useStore();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
@@ -56,6 +56,13 @@ const Header: React.FC = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     navigate('/');
+  };
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      setLoginModalOpen(true);
+    }
   };
 
   const trendingSearches = ['Rice', 'Oil', 'Smartphone', 'Panjabi'];
@@ -188,15 +195,75 @@ const Header: React.FC = () => {
             </button>
           )}
           
-          <Link to="/wishlist" className="flex flex-col items-center group relative">
-            <Heart size={22} className="text-gray-600 group-hover:text-[#f85606] transition-colors" />
-            <span className="text-[10px] mt-1 text-gray-500 font-bold uppercase tracking-tight">Wishlist</span>
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1 right-0 bg-[#f85606] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-in zoom-in">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
+          <div className="relative group">
+            <Link 
+              to="/wishlist" 
+              onClick={handleWishlistClick}
+              className="flex flex-col items-center group relative"
+            >
+              <Heart size={22} className="text-gray-600 group-hover:text-[#f85606] transition-colors" />
+              <span className="text-[10px] mt-1 text-gray-500 font-bold uppercase tracking-tight">Wishlist</span>
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 right-0 bg-[#f85606] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-in zoom-in">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* Wishlist Dropdown */}
+            <div className="absolute top-full right-0 mt-2 w-80 bg-white shadow-2xl rounded-lg border invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+              <div className="p-4 border-b">
+                <h3 className="font-semibold text-gray-800 text-sm italic uppercase tracking-tight">My Wishlist ({wishlist.length})</h3>
+              </div>
+              <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                {wishlist.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400 text-xs italic font-medium">
+                    Your wishlist is empty
+                  </div>
+                ) : (
+                  wishlist.map(item => (
+                    <div key={item.id} className="p-4 flex gap-3 border-b last:border-0 hover:bg-gray-50 transition-colors group/item">
+                      <img src={item.image} alt={item.name} className="w-10 h-10 rounded object-cover border" />
+                      <div className="flex-grow">
+                        <p className="text-xs font-medium text-gray-800 line-clamp-1">{item.name}</p>
+                        <p className="text-[10px] font-black text-[#f85606] mt-0.5">{formatPrice(item.price)}</p>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addToCart(item);
+                          }}
+                          className="text-[#f85606] hover:bg-orange-50 p-1.5 rounded-lg transition-colors shadow-sm border border-orange-100"
+                        >
+                          <Plus size={14} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleWishlist(item);
+                          }}
+                          className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {wishlist.length > 0 && (
+                <div className="p-4 bg-gray-50 rounded-b-lg border-t">
+                  <Link 
+                    to="/wishlist"
+                    className="block w-full py-2.5 text-center bg-gray-800 text-white rounded font-black uppercase tracking-widest hover:bg-black transition-all transform active:scale-[0.98] shadow-sm text-[10px]"
+                  >
+                    View All Favorites
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="relative group">
             <Link to="/cart" className="flex flex-col items-center">
@@ -213,11 +280,11 @@ const Header: React.FC = () => {
 
             <div className="absolute top-full right-0 mt-2 w-80 bg-white shadow-2xl rounded-lg border invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
               <div className="p-4 border-b">
-                <h3 className="font-semibold text-gray-800 text-sm">My Cart ({cart.length})</h3>
+                <h3 className="font-semibold text-gray-800 text-sm italic uppercase tracking-tight">My Cart ({cart.length})</h3>
               </div>
               <div className="max-h-60 overflow-y-auto custom-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500 text-xs italic">
+                  <div className="p-8 text-center text-gray-400 text-xs italic font-medium">
                     Your cart is empty
                   </div>
                 ) : (
@@ -249,7 +316,7 @@ const Header: React.FC = () => {
                   </div>
                   <Link 
                     to="/cart"
-                    className="block w-full py-2 text-center bg-[#f85606] text-white rounded font-semibold hover:bg-[#d04a05] transition-all transform active:scale-[0.98] shadow-sm text-sm"
+                    className="block w-full py-2.5 text-center bg-[#f85606] text-white rounded font-black uppercase tracking-widest hover:bg-[#d04a05] transition-all transform active:scale-[0.98] shadow-sm text-[10px]"
                   >
                     View and Check Out
                   </Link>
