@@ -1,6 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
+import { Analytics } from '@vercel/analytics/react';
 
 // Public Views
 import PublicLayout from './layouts/PublicLayout';
@@ -88,6 +89,7 @@ const App: React.FC = () => {
     <StoreProvider>
       <Router>
         <AppContent />
+        <Analytics />
       </Router>
     </StoreProvider>
   );
