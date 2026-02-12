@@ -18,9 +18,11 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulation of backend authentication request
+    // Default password fallback if not set in profile
+    const validPassword = adminProfile.password || 'admin123';
+
     setTimeout(() => {
-      if (email === adminProfile.email && password === 'admin123') {
+      if (email === adminProfile.email && password === validPassword) {
         // If 2FA is enabled, perform TOTP verification
         if (adminProfile.twoFactorEnabled && adminProfile.twoFactorSecret) {
           if (!authCode || authCode.length !== 6) {
@@ -39,7 +41,6 @@ const AdminLogin: React.FC = () => {
               secret: adminProfile.twoFactorSecret
             });
 
-            // Validate with a window of 1 (±30s) to account for client/server clock skew
             const delta = totp.validate({ token: authCode, window: 1 });
             
             if (delta === null) {
@@ -60,7 +61,7 @@ const AdminLogin: React.FC = () => {
         setAdmin(true);
         navigate('/admin/dashboard');
       } else {
-        setError('Invalid credentials. Hint: admin@superstore.com / admin123');
+        setError('Invalid credentials. Please verify your admin email and password.');
         setIsLoading(false);
       }
     }, 1200);
@@ -108,21 +109,23 @@ const AdminLogin: React.FC = () => {
             </div>
             
             {/* TOTP Input Field */}
-            <div className={`transition-all duration-500 ${adminProfile.twoFactorEnabled ? 'opacity-100 scale-100' : 'opacity-40 scale-95 pointer-events-none'}`}>
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Authentication Code</label>
-              <input
-                type="text"
-                maxLength={6}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-orange-500/10 transition-all tracking-[0.6em] text-center font-black text-lg"
-                placeholder="000000"
-                value={authCode}
-                onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, ''))}
-                required={adminProfile.twoFactorEnabled}
-              />
-              <p className="text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-widest text-center">Enter the code from your authenticator app</p>
-            </div>
+            {adminProfile.twoFactorEnabled && (
+              <div className="animate-in slide-in-from-top-2 duration-300">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Authentication Code</label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-orange-500/10 transition-all tracking-[0.6em] text-center font-black text-lg"
+                  placeholder="000000"
+                  value={authCode}
+                  onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, ''))}
+                  required
+                />
+                <p className="text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-widest text-center">Enter the 6-digit code from your authenticator app</p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between px-1">
               <label className="flex items-center gap-2 cursor-pointer group">

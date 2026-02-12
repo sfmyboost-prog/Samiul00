@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ChevronRight, Settings, Save, AlertCircle, CheckCircle2 } from '../../components/common/Icons';
@@ -9,7 +8,10 @@ const StoreSettings: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   // Local state for the form to handle changes before saving
-  const [localProfile, setLocalProfile] = useState(adminProfile);
+  const [localProfile, setLocalProfile] = useState({
+    ...adminProfile,
+    password: adminProfile.password || 'admin123'
+  });
   const [localSocial, setLocalSocial] = useState(socialSettings);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -94,7 +96,7 @@ const StoreSettings: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2.5">Email Address</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2.5">Admin Email Address</label>
                 <input 
                   type="email" 
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-[#f85606]/5 transition-all text-sm font-bold text-gray-800"
@@ -103,19 +105,20 @@ const StoreSettings: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2.5">Administrative Role</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2.5">Admin Password</label>
                 <input 
-                  type="text" 
-                  className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-[#f85606]/5 transition-all text-sm font-bold text-gray-800"
-                  value={localProfile.role}
-                  onChange={e => setLocalProfile({...localProfile, role: e.target.value})}
+                  type="password" 
+                  placeholder="Enter new admin password"
+                  className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-orange-500/5 transition-all text-sm font-bold text-gray-800"
+                  value={localProfile.password}
+                  onChange={e => setLocalProfile({...localProfile, password: e.target.value})}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Social Login Requirements Implementation */}
+        {/* Social Auth Section */}
         <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="lg:col-span-3">

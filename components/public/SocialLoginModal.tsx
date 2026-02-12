@@ -1,6 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User, ChevronRight, AlertCircle, CheckCircle2 } from '../common/Icons';
+import { useStore } from '../../context/StoreContext';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import FacebookLogin from 'react-facebook-login';
 
 interface Account {
   name: string;
@@ -15,187 +17,134 @@ interface SocialLoginModalProps {
   platform: 'Google' | 'Facebook';
 }
 
-type ModalStep = 'select-account' | 'permission';
-
 const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose, onSelect, platform }) => {
-  const [step, setStep] = useState<ModalStep>('select-account');
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const { socialSettings } = useStore();
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const accounts: Account[] = [
-    {
-      name: 'Md Samiul',
-      email: 'md4518199@gmail.com',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'
-    }
-  ];
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    try {
+      // Decode JWT payload locally (Standard browser approach)
+      const base64Url = credentialResponse.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
 
-  const handleAccountClick = (account: Account) => {
-    setSelectedAccount(account);
-    setStep('permission');
+      const user = JSON.parse(jsonPayload);
+      onSelect({
+        name: user.name,
+        email: user.email,
+        avatar: user.picture
+      });
+    } catch (err) {
+      setError('Failed to process Google account data.');
+    }
   };
 
-  const handleAllow = () => {
-    if (selectedAccount) {
-      onSelect(selectedAccount);
-      // Reset for next time
-      setTimeout(() => {
-        setStep('select-account');
-        setSelectedAccount(null);
-      }, 500);
+  const handleFacebookCallback = (response: any) => {
+    if (response.status !== 'unknown' && response.accessToken) {
+      onSelect({
+        name: response.name,
+        email: response.email || `${response.id}@facebook.user`,
+        avatar: response.picture?.data?.url || `https://graph.facebook.com/${response.id}/picture?type=large`
+      });
+    } else {
+      setError('Facebook login was cancelled or failed.');
     }
   };
 
   const handleClose = () => {
+    setError(null);
     onClose();
-    setTimeout(() => setStep('select-account'), 400);
   };
 
-  const renderSelectAccount = () => (
-    <div className="p-8 animate-in fade-in zoom-in duration-300">
-      {/* Header Branding */}
-      <div className="flex flex-col items-center mb-10">
-        <div className="w-12 h-12 mb-5">
-          {platform === 'Google' ? (
-            <svg viewBox="0 0 24 24" className="w-full h-full">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-          ) : (
-            <svg className="w-full h-full fill-[#1877f2]" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-          )}
-        </div>
-        <h2 className="text-2xl font-normal text-gray-800 tracking-tight">Choose an account</h2>
-        <p className="text-sm text-gray-600 mt-2 font-medium">to continue to <span className="text-blue-600">SuperStore</span></p>
-      </div>
-
-      {/* Account List */}
-      <div className="space-y-0.5 border-t border-b -mx-8 bg-white">
-        {accounts.map((account, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleAccountClick(account)}
-            className="w-full flex items-center gap-4 px-8 py-5 hover:bg-gray-50 transition-colors group border-b last:border-0"
-          >
-            <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-gray-100">
-              <img src={account.avatar} className="w-full h-full object-cover" alt={account.name} />
-            </div>
-            <div className="flex-grow text-left">
-              <p className="text-sm font-bold text-gray-800 leading-none mb-1">{account.name}</p>
-              <p className="text-xs text-gray-400 font-medium">{account.email}</p>
-            </div>
-          </button>
-        ))}
-        <button className="w-full flex items-center gap-4 px-8 py-5 hover:bg-gray-50 transition-colors">
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
-            <User size={20} strokeWidth={1.5} />
-          </div>
-          <p className="text-sm font-bold text-gray-800">Use another account</p>
-        </button>
-      </div>
-
-      {/* Footer Text */}
-      <div className="mt-8 text-[11px] text-gray-400 leading-relaxed font-medium">
-        Before using this app, you can review SuperStore’s <span className="text-blue-600 cursor-pointer hover:underline font-bold">privacy policy</span> and <span className="text-blue-600 cursor-pointer hover:underline font-bold">terms of service</span>.
-      </div>
-
-      <div className="mt-10 flex justify-between items-center text-[11px] text-gray-500 border-t pt-4 -mx-2">
-        <div className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors group">
-          <span className="font-bold">English (United States)</span>
-          <ChevronRight size={12} className="rotate-90 text-gray-400" />
-        </div>
-        <div className="flex gap-4 font-bold">
-          <span className="hover:underline cursor-pointer">Help</span>
-          <span className="hover:underline cursor-pointer">Privacy</span>
-          <span className="hover:underline cursor-pointer">Terms</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPermission = () => (
-    <div className="p-8 animate-in slide-in-from-right-10 duration-500">
-      {/* Header Branding */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 mb-5 p-3 bg-orange-50 rounded-2xl flex items-center justify-center font-black text-[#f85606] text-2xl shadow-inner border border-orange-100">
-          S
-        </div>
-        <h2 className="text-xl font-black text-gray-800 text-center leading-tight">SuperStore wants to access your {platform} Account</h2>
-        <div className="mt-6 flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-full border border-gray-200">
-          <img src={selectedAccount?.avatar} className="w-6 h-6 rounded-full object-cover border border-white" />
-          <span className="text-xs font-black text-gray-700">{selectedAccount?.email}</span>
-        </div>
-      </div>
-
-      <div className="space-y-6 py-4">
-        <p className="text-xs text-gray-400 font-black uppercase tracking-widest text-center">Permissions Requested</p>
-        <div className="space-y-4">
-          <div className="flex gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-[#f85606]/30 transition-all">
-            <div className="mt-0.5 text-blue-600">
-              <CheckCircle2 size={18} />
-            </div>
-            <p className="text-sm text-gray-600 leading-relaxed font-medium">
-              <span className="font-black text-gray-800">Personal Info:</span> View your public profile details and name.
-            </p>
-          </div>
-          <div className="flex gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-[#f85606]/30 transition-all">
-            <div className="mt-0.5 text-blue-600">
-              <CheckCircle2 size={18} />
-            </div>
-            <p className="text-sm text-gray-600 leading-relaxed font-medium">
-              <span className="font-black text-gray-800">Email:</span> Access your primary email address for registration.
-            </p>
-          </div>
-        </div>
-        
-        <div className="p-4 bg-orange-50 rounded-2xl flex gap-3 border border-orange-100">
-          <AlertCircle size={20} className="text-[#f85606] shrink-0" />
-          <p className="text-[10px] text-orange-800 font-bold leading-relaxed uppercase tracking-wider">
-            SuperStore will use this information safely. You can revoke access at any time in your {platform} settings.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-8 border-t border-gray-100">
-        <button 
-          onClick={() => setStep('select-account')}
-          className="flex-1 py-4 px-6 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-2xl transition-all order-2 sm:order-1"
-        >
-          Cancel
-        </button>
-        <button 
-          onClick={handleAllow}
-          className="flex-1 py-4 px-6 bg-[#f85606] text-white text-[10px] font-black rounded-2xl shadow-xl shadow-orange-500/30 hover:bg-[#d04a05] transition-all transform active:scale-95 uppercase tracking-widest order-1 sm:order-2"
-        >
-          Allow Access
-        </button>
-      </div>
-    </div>
-  );
+  // Validation: Ensure Admin has configured the keys
+  const configMissing = platform === 'Google' ? !socialSettings.google_client_id : !socialSettings.facebook_app_id;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-500" 
-        onClick={handleClose}
-      ></div>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-500" onClick={handleClose}></div>
       
-      {/* Modal Container */}
-      <div className="relative bg-white w-full max-w-[480px] rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in slide-in-from-bottom-12 duration-700">
-        <button 
-          onClick={handleClose} 
-          className="absolute top-8 right-8 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-10"
-        >
+      <div className="relative bg-white w-full max-w-[480px] rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in slide-in-from-bottom-12 duration-700 p-10">
+        <button onClick={handleClose} className="absolute top-8 right-8 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-10">
           <X size={24} />
         </button>
-        
-        {step === 'select-account' ? renderSelectAccount() : renderPermission()}
+
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 mb-5 p-3 bg-orange-50 rounded-2xl flex items-center justify-center font-black text-[#f85606] text-2xl shadow-inner border border-orange-100">
+            S
+          </div>
+          <h2 className="text-xl font-black text-gray-800 text-center leading-tight uppercase italic tracking-tight">Connect with {platform}</h2>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">SECURE SINGLE SIGN-ON</p>
+        </div>
+
+        {configMissing ? (
+          <div className="bg-red-50 p-6 rounded-3xl border border-red-100 flex flex-col items-center text-center">
+             <AlertCircle size={32} className="text-red-400 mb-3" />
+             <p className="text-xs font-bold text-red-700 uppercase tracking-tight leading-relaxed">
+               {platform} login is currently disabled by the administrator. 
+               Please contact support or configure your {platform === 'Google' ? 'Client ID' : 'App ID'} in settings.
+             </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-6 py-6">
+            {error && (
+              <div className="w-full p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2 animate-in shake duration-300">
+                <AlertCircle size={16} /> {error}
+              </div>
+            )}
+
+            <div className="w-full flex justify-center">
+              {platform === 'Google' && socialSettings.google_client_id && (
+                <GoogleOAuthProvider clientId={socialSettings.google_client_id}>
+                  <div className="transform scale-125 origin-center">
+                    <GoogleLogin 
+                      onSuccess={handleGoogleSuccess} 
+                      onError={() => setError('Google Authentication Failed')}
+                      useOneTap
+                      shape="pill"
+                    />
+                  </div>
+                </GoogleOAuthProvider>
+              )}
+
+              {platform === 'Facebook' && socialSettings.facebook_app_id && (
+                <FacebookLogin
+                  appId={socialSettings.facebook_app_id}
+                  autoLoad={false}
+                  fields="name,email,picture"
+                  callback={handleFacebookCallback}
+                  render={(renderProps: any) => (
+                    <button 
+                      onClick={renderProps.onClick}
+                      className="w-full py-4 bg-[#1877f2] text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:bg-blue-700 transition-all transform active:scale-95"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                      Login with Facebook
+                    </button>
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="mt-4 p-4 bg-orange-50 rounded-2xl flex gap-3 border border-orange-100">
+              <CheckCircle2 size={20} className="text-[#f85606] shrink-0" />
+              <p className="text-[10px] text-orange-800 font-bold leading-relaxed uppercase tracking-wider">
+                This app will only receive your public profile and email. We never post to your timeline or share your data.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 flex justify-center items-center gap-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest border-t pt-8">
+          <span className="hover:text-blue-600 cursor-pointer">Help</span>
+          <span className="hover:text-blue-600 cursor-pointer">Privacy</span>
+          <span className="hover:text-blue-600 cursor-pointer">Terms</span>
+        </div>
       </div>
     </div>
   );

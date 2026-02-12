@@ -101,6 +101,7 @@ export interface AdminProfile {
   address: string;
   contact: string;
   email: string;
+  password?: string; // New field for real admin creds
   role: string;
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
