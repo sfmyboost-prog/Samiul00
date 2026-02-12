@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { Link } from 'react-router-dom';
@@ -10,7 +9,6 @@ const MobileCategories: React.FC = () => {
 
   const activeCatObj = categories.find(c => c.id === activeCategory);
 
-  // Mock icons for the sidebar since standard icons vary
   const sideIcons: Record<string, any> = {
     'Groceries': HomeIcon,
     'Electronics': Smartphone,
@@ -23,7 +21,7 @@ const MobileCategories: React.FC = () => {
   };
 
   return (
-    <div className="lg:hidden flex h-[calc(100vh-170px)] bg-[#f4f4f7] overflow-hidden -mx-4">
+    <div className="lg:hidden flex h-[calc(100vh-170px)] bg-[#f4f4f7] overflow-hidden rounded-2xl border border-gray-100 mt-4 mb-4">
       {/* Sidebar */}
       <div className="w-24 flex-shrink-0 bg-white border-r overflow-y-auto custom-scrollbar">
         <div className="flex flex-col">
@@ -56,7 +54,6 @@ const MobileCategories: React.FC = () => {
       <div className="flex-grow p-4 overflow-y-auto custom-scrollbar bg-white">
         <div className="mb-6">
           <div className="h-24 bg-orange-50 rounded-lg flex items-center justify-center border border-orange-100 mb-6 overflow-hidden relative">
-            {/* Fixed: use thumbnail instead of image to match Category interface */}
             <img src={activeCatObj?.thumbnail} className="absolute inset-0 w-full h-full object-cover opacity-20" alt="banner" />
             <h3 className="relative z-10 font-black text-[#f85606] uppercase tracking-widest text-xs italic">{activeCatObj?.name} Mall</h3>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, ChevronLeft } from '../common/Icons';
@@ -18,7 +17,6 @@ const MobileHeader: React.FC = () => {
   const isCategoriesPage = pathname === '/categories';
   const isAccountPage = pathname === '/account';
 
-  // Real-time suggestions from the first letter
   useEffect(() => {
     if (searchTerm.trim().length > 0) {
       const filtered = products.filter(product => 
@@ -32,7 +30,6 @@ const MobileHeader: React.FC = () => {
     }
   }, [searchTerm, products]);
 
-  // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -54,16 +51,14 @@ const MobileHeader: React.FC = () => {
   const handleSuggestionClick = (productName: string) => {
     setSearchTerm(productName);
     setIsSearchFocused(false);
-    // User can then click the Search button to confirm
   };
 
-  // Account page has its own custom orange header, so we hide the global one
   if (isAccountPage) return null;
 
   return (
     <div className="lg:hidden bg-white relative">
-      {/* App Banner */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+      {/* App Banner - Matching standard app margins */}
+      <div className="flex items-center justify-between px-4 py-4 border-b bg-white">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#f85606] rounded-xl flex items-center justify-center font-black text-white text-2xl shadow-sm border border-orange-600/20">
             S
@@ -73,19 +68,19 @@ const MobileHeader: React.FC = () => {
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Save more on App</p>
           </div>
         </div>
-        <button className="bg-[#f85606] text-white px-6 py-1.5 rounded-full text-xs font-black shadow-lg shadow-orange-500/20 active:scale-95 transition-transform uppercase tracking-wider">
+        <button className="bg-[#f85606] text-white px-6 py-2 rounded-full text-[10px] font-black shadow-lg shadow-orange-500/20 active:scale-95 transition-transform uppercase tracking-wider">
           Open
         </button>
       </div>
 
       {/* Navigation Header */}
       {isCategoriesPage ? (
-        <div className="px-4 py-3 flex items-center justify-between bg-white border-b">
+        <div className="px-4 py-4 flex items-center justify-between bg-white border-b">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate(-1)} className="text-gray-800">
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <h2 className="text-lg font-bold text-gray-800 uppercase tracking-tighter">Categories</h2>
+            <h2 className="text-lg font-bold text-gray-800 uppercase tracking-tighter italic">Categories</h2>
           </div>
           <button className="text-gray-800" onClick={() => navigate('/')}>
             <Search size={22} />
@@ -93,22 +88,22 @@ const MobileHeader: React.FC = () => {
         </div>
       ) : (
         /* Home Search Bar */
-        <div className="px-4 py-3 sticky top-0 z-50 bg-white" ref={searchRef}>
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center bg-white rounded-full border border-orange-500 overflow-hidden shadow-sm">
+        <div className="px-4 py-4 sticky top-0 z-50 bg-white" ref={searchRef}>
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden shadow-sm transition-all focus-within:ring-4 focus-within:ring-orange-500/5 focus-within:bg-white">
             <div className="pl-4 text-gray-400">
               <Search size={18} />
             </div>
             <input 
               type="text" 
               placeholder="Search in SuperStore..." 
-              className="flex-grow bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 font-medium"
+              className="flex-grow bg-transparent px-3 py-3 text-sm outline-none placeholder:text-gray-400 font-bold"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
             />
             <button 
               type="submit"
-              className="bg-[#f85606] text-white px-5 py-2.5 text-xs font-black uppercase tracking-wider active:bg-[#d04a05]"
+              className="bg-[#f85606] text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest active:bg-[#d04a05]"
             >
               Search
             </button>
@@ -135,14 +130,14 @@ const MobileHeader: React.FC = () => {
                   ))}
                   <button 
                     onClick={() => handleSearchSubmit()}
-                    className="w-full py-3 text-center text-xs font-black text-[#f85606] uppercase tracking-widest bg-orange-50/50"
+                    className="w-full py-4 text-center text-[10px] font-black text-[#f85606] uppercase tracking-widest bg-orange-50/50"
                   >
                     See all results
                   </button>
                 </div>
               ) : (
-                <div className="p-6 text-center text-gray-400 text-xs italic">
-                  No products found for "{searchTerm}"
+                <div className="p-8 text-center text-gray-400 text-[10px] font-black uppercase tracking-widest italic opacity-60">
+                  No products matching "{searchTerm}"
                 </div>
               )}
             </div>

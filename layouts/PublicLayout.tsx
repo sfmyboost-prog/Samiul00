@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '../components/public/Header';
 import MobileHeader from '../components/public/MobileHeader';
@@ -20,7 +19,8 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       {/* Mobile Header */}
       <MobileHeader />
 
-      <main className="flex-grow w-full max-w-[1580px] mx-auto pb-32">
+      {/* Main Content with standard gutters (px-4 on mobile) */}
+      <main className="flex-grow w-full max-w-[1580px] mx-auto pb-32 px-4 sm:px-6 md:px-10">
         {children}
       </main>
 

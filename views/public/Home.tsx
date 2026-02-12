@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import HeroSlider from '../../components/public/HeroSlider';
 import FlashSale from '../../components/public/FlashSale';
@@ -25,7 +24,7 @@ const Home: React.FC = () => {
   const { promoBanner } = siteMedia;
 
   return (
-    <div className="animate-in fade-in duration-500 px-4 md:px-6">
+    <div className="animate-in fade-in duration-500">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Hero Slider (Large Banner) */}

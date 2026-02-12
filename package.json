@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "npm": "npm"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -16,7 +15,9 @@
     "lucide-react": "^0.475.0",
     "recharts": "^2.15.0",
     "otpauth": "^9.3.1",
-    "qrcode.react": "^4.0.1"
+    "qrcode.react": "^4.0.1",
+    "@react-oauth/google": "^0.12.1",
+    "react-facebook-login": "^4.1.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

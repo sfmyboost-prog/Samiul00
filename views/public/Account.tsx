@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -31,8 +30,6 @@ const Account: React.FC = () => {
     const savedUser = localStorage.getItem('current_user');
     if (savedUser) {
       const parsed = JSON.parse(savedUser);
-      // If name is too long or contains spaces, we might just show a snippet or the raw name
-      // Screenshot shows "md4518199", which looks like a username
       setUserName(parsed.name || parsed.email.split('@')[0]);
     }
   }, []);
@@ -71,14 +68,14 @@ const Account: React.FC = () => {
   ];
 
   return (
-    <div className="lg:hidden min-h-screen bg-[#f4f4f7] -mx-4 pb-20 overflow-x-hidden">
-      {/* Header */}
-      <div className="bg-[#f85606] text-white px-4 py-4 flex items-center justify-between shadow-md sticky top-0 z-50">
+    <div className="lg:hidden min-h-screen bg-[#f4f4f7] pb-20">
+      {/* Header - Now sitting within padded container, looks modern and floating */}
+      <div className="bg-[#f85606] text-white px-4 py-5 flex items-center justify-between shadow-lg rounded-2xl mt-4 mb-6 sticky top-4 z-50 transition-all">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-1 hover:bg-white/10 rounded-full transition-colors">
             <ChevronLeft size={24} strokeWidth={2.5} />
           </button>
-          <h1 className="text-xl font-medium">My Account</h1>
+          <h1 className="text-xl font-bold uppercase italic tracking-tighter">My Account</h1>
         </div>
         <button className="p-1 hover:bg-white/10 rounded-full transition-colors">
           <MoreVertical size={24} />
@@ -88,43 +85,46 @@ const Account: React.FC = () => {
       {!isLoggedIn ? (
         <>
           {/* Logged Out View */}
-          <div className="bg-white px-4 py-5 mb-3 flex items-center justify-between">
-            <p className="text-sm text-gray-700">Hello, Welcome to Daraz!</p>
+          <div className="bg-white px-5 py-6 mb-4 flex items-center justify-between rounded-2xl shadow-sm border border-gray-100">
+            <div>
+              <p className="text-sm font-black text-gray-800 uppercase tracking-tighter italic">Hello, Guest!</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Welcome to SuperStore</p>
+            </div>
             <Link 
               to="/login"
-              className="bg-[#f85606] text-white px-5 py-2 rounded-md text-sm font-bold uppercase tracking-tight shadow-md active:scale-95 transition-transform"
+              className="bg-[#f85606] text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.1em] shadow-lg shadow-orange-500/20 active:scale-95 transition-transform"
             >
-              LOGIN / SIGNUP
+              LOGIN
             </Link>
           </div>
 
-          <div className="bg-white mb-3">
+          <div className="bg-white mb-4 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {loggedOutMenuItems.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <Link 
                   key={idx} 
                   to={item.path} 
-                  className="flex items-center gap-4 px-4 py-5 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  className="flex items-center gap-4 px-5 py-5 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
-                  <Icon size={22} className="text-gray-400" />
-                  <span className="text-base text-gray-800 font-normal">{item.label}</span>
+                  <Icon size={20} className="text-[#f85606]" strokeWidth={2} />
+                  <span className="text-[11px] text-gray-700 font-black uppercase tracking-widest">{item.label}</span>
                 </Link>
               );
             })}
           </div>
 
-          <div className="bg-white">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {loggedOutSupportItems.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <Link 
                   key={idx} 
                   to={item.path} 
-                  className="flex items-center gap-4 px-4 py-5 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  className="flex items-center gap-4 px-5 py-5 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
-                  <Icon size={22} className="text-gray-400" />
-                  <span className="text-base text-gray-800 font-normal">{item.label}</span>
+                  <Icon size={20} className="text-gray-400" strokeWidth={2} />
+                  <span className="text-[11px] text-gray-700 font-black uppercase tracking-widest">{item.label}</span>
                 </Link>
               );
             })}
@@ -133,45 +133,55 @@ const Account: React.FC = () => {
       ) : (
         <>
           {/* Logged In View */}
-          <div className="bg-white px-4 py-5 mb-3">
-            <p className="text-sm text-gray-700">Hello, {userName}</p>
+          <div className="bg-white px-5 py-6 mb-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-[#f85606] font-black shadow-inner border border-orange-100">
+               {userName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-black text-gray-800 uppercase tracking-tighter italic">Hello, {userName}</p>
+              <p className="text-[9px] text-green-500 font-bold uppercase tracking-[0.2em] mt-0.5 flex items-center gap-1">
+                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> PRO MEMBER
+              </p>
+            </div>
           </div>
 
-          <div className="bg-white mb-3 shadow-sm">
+          <div className="bg-white mb-4 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {loggedInItems.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <Link 
                   key={idx} 
                   to={item.path} 
-                  className="flex items-center gap-4 px-4 py-4 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  className="flex items-center gap-4 px-5 py-4 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
-                  <Icon size={22} className="text-gray-400" strokeWidth={1.5} />
-                  <span className="text-base text-gray-800 font-normal">{item.label}</span>
+                  <Icon size={20} className="text-[#f85606]" strokeWidth={2} />
+                  <span className="text-[11px] text-gray-700 font-black uppercase tracking-widest">{item.label}</span>
                 </Link>
               );
             })}
           </div>
 
-          <div className="bg-white mb-3 shadow-sm">
+          <div className="bg-white mb-4 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {supportItems.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <Link 
                   key={idx} 
                   to={item.path} 
-                  className="flex items-center gap-4 px-4 py-4 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  className="flex items-center gap-4 px-5 py-4 border-b last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
-                  <Icon size={22} className="text-gray-400" strokeWidth={1.5} />
-                  <span className="text-base text-gray-800 font-normal">{item.label}</span>
+                  <Icon size={20} className="text-gray-400" strokeWidth={2} />
+                  <span className="text-[11px] text-gray-700 font-black uppercase tracking-widest">{item.label}</span>
                 </Link>
               );
             })}
           </div>
 
           {/* Email Promotion Toggle */}
-          <div className="bg-white px-4 py-6 mb-10 flex items-center justify-between shadow-sm">
-            <p className="text-sm text-gray-600 font-medium">I'd like to receive exclusive offers and promotions via email</p>
+          <div className="bg-white px-5 py-6 mb-10 flex items-center justify-between rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-relaxed max-w-[70%]">
+              Receive exclusive offers and secret promotions via email
+            </p>
             <button 
               onClick={() => setReceiveEmail(!receiveEmail)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
@@ -179,7 +189,7 @@ const Account: React.FC = () => {
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
                   receiveEmail ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
